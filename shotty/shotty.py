@@ -13,11 +13,14 @@ def filter_instances(project):
          instances =ec2.instances.all()
     return instances
 
+
 def has_pending_snapshot(volume):
     print("test pending")
+
     snapshots = list(volume.snapshots.all())
-    if snapshots[0].state == 'pending':
-        print("pending")
+    if snapshots:
+        print(snapshots[0].state)
+
     return snapshots and snapshots[0].state == 'pending'
 
 @click.group()
@@ -91,6 +94,9 @@ def create_snapshot(project):
     instances =filter_instances(project)
 
     for i in instances:
+        if i.state == 'terminated':
+            print("{0} was terminated.".format(i.id))
+            continue
         print("Stopping {0}".format(i.id))
 
         i.stop()
