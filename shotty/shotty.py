@@ -15,13 +15,12 @@ def filter_instances(project):
 
 
 def has_pending_snapshot(volume):
-    print("test pending")
-
     snapshots = list(volume.snapshots.all())
     if snapshots:
         print(snapshots[0].state)
 
     return snapshots and snapshots[0].state == 'pending'
+
 
 @click.group()
 def cli():
@@ -94,9 +93,6 @@ def create_snapshot(project):
     instances =filter_instances(project)
 
     for i in instances:
-        if i.state == 'terminated':
-            print("{0} was terminated.".format(i.id))
-            continue
         print("Stopping {0}".format(i.id))
 
         i.stop()
@@ -169,6 +165,22 @@ def start_instances(project):
 
     return
 
+@instances.command('reboot')
+@click.option('--project',default=None, help="Only instances for project")
+
+def reboot_instances(project):
+    "Reboot EC2 instances"
+    instances =filter_instances(project)
+
+    for i in instances:
+        print("Rebooting {0} ...".format(i.id))
+
+        try:
+           i.reboot()
+        except botocore.exceptions.ClientError as e:
+            print("Could not reboot {0}. ".format(i.id) + str(e))
+            continue
+    return
 
 if __name__ == '__main__':
    cli()
