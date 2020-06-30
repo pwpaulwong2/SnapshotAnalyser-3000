@@ -112,12 +112,19 @@ def create_snapshot(project,force):
                 print("   Skipping {0}, snapshot already in progress".format(v.id))
                 continue
             print("   Creating snapshot of {0}".format(v.id))
-            v.create_snapshot(Description="Created by SnapshotAlyser 3000")
+            try:
+                v.create_snapshot(Description="Created by SnapshotAlyser 3000")
+            except botocore.exceptions.ClientError as e:
+                print("Could not create snapshot {0}. ".format(v.id) + str(e))
+                continue
+            except botocore.exceptions.WaiterError as e:
+                print("Could not create snapshot {0}. ".format(v.id) + str(e))
+                continue
 
-        print("Starting {0}".format(i.id))
+         print("Starting {0}".format(i.id))
 
-        i.start()
-        i.wait_until_running()
+         i.start()
+         i.wait_until_running()
 
     print("Job's done!")
     return
